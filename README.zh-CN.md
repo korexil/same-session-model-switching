@@ -47,7 +47,7 @@ python -m unittest discover -s reference -p "test_*.py"
 python scripts/privacy_check.py
 ```
 
-演示会在同一个 session ID、同一份 transcript 和同一个 workspace 内完成 A → B → A。参考实现只用 Python 标准库，不联网、不读凭据。实际使用时，把探活、切换命令和证据读取三个边界接到你自己的网关与外壳。
+演示会在同一个 session ID、同一份 transcript 和同一个 workspace 内完成 A → B → A，且不联网、不读凭据。全部参考实现只用 Python 标准库；[`HttpBridge`](reference/http_bridge.py) 给出了把探活、切换命令和证据读取三个边界接到自有网关与外壳的通用客户端契约。
 
 预期输出：
 
@@ -64,7 +64,7 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 - 每条路由被供应商支持的凭据；
 - 对应外壳/网关版本的精确 session 证据读取器。
 
-这四项依赖具体环境。本仓库给出明确契约与验收，但不可能附带别人的模型权益，也不能承诺消费级 OAuth 可以搬到另一个客户端。使用受支持的 API/provider key 时接入比较直接；原生订阅额度只有在供应商明确支持该客户端或连接器时才能使用。
+这四项依赖具体环境。本仓库给出明确契约、通用 HTTP bridge 客户端与验收测试，但不可能附带别人的模型权益，也不能承诺消费级 OAuth 可以搬到另一个客户端。使用受支持的 API/provider key 时接入比较直接；原生订阅额度只有在供应商明确支持该客户端或连接器时才能使用。
 
 ## “订阅额度”其实有三种
 
@@ -80,9 +80,9 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 
 1. `/models` 能列出模型，只能证明“看得见”，不能证明能回答。
 2. `desired`、`actual`、`pending`、`unavailable` 必须分开。
-3. 每次选择都带单调递增 revision；慢回来的旧探针不能覆盖新选择。
+3. 每个被接受的切换事务都带单调递增 revision 和唯一 correlation ID；旧结果或无关结果不能覆盖新选择。
 4. session 忙时只保留最后一次选择；真正执行前若探活证据过期，必须重探。
-5. `actual` 必须是结构化证据：provider、upstream model、transport、request ID、精确 session ID、时间。
+5. `actual` 必须是与本次动作因果绑定的结构化证据：provider、upstream model、transport、request ID、精确 session ID、revision、correlation ID，以及晚于动作的观察时间。
 6. 切换失败就保留旧路由；连回滚也验证失败时进入 `degraded/actual_unknown`，不能假装成功。
 7. 切换前检查当前 transcript 大小与必要工具能力，不能只看模型名。
 8. OAuth 只交给供应商明确支持的客户端/适配器使用。
@@ -107,8 +107,10 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 - [订阅与 API](docs/subscription-vs-api.md)：账单、鉴权与可移植性边界
 - [架构](docs/architecture.md)：组件与数据流
 - [控制器参考实现](reference/switch_controller.py)：可执行状态机
+- [HTTP bridge 客户端](reference/http_bridge.py)：通用真实探活、切换与证据契约
+- [原子状态存储](reference/state_store.py)：原子替换且不含凭据的 desired 持久化
 - [可运行演示](reference/demo.py)：无凭据 A → B → A 连续性证明
-- [控制器测试](reference/test_switch_controller.py)：竞态、过期、回滚、降级
+- [参考测试](reference)：竞态、陈旧证据、取消、持久化、bridge 解析、回滚与降级
 - [适配器契约](docs/adapter-contract.md)：供应商无关协议
 - [会话连续性](docs/session-continuity.md)：换模后继承什么
 - [失败模式](docs/failure-modes.md)：假成功、误判与恢复

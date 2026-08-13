@@ -35,7 +35,7 @@ sequenceDiagram
 
     UI->>SC: request(target)
     SC->>RG: validate target + mode + capabilities
-    SC->>GW: minimal real completion
+    SC->>GW: minimal real completion (revision + correlation)
     GW-->>SC: usable or typed failure
     SC->>SH: switch at idle boundary
     SH-->>SC: command acknowledgement
@@ -118,9 +118,13 @@ on idle_boundary:
     apply(target)
 ```
 
-If the operator selects the already-active model while another target is pending, treat it as cancellation of the pending request.
+If the operator selects the already-active model while another target is being probed or is pending, treat it as cancellation. Advance the revision, clear the in-flight intent, and discard its late completion.
 
-Every request also receives a monotonic revision. Probe, confirmation, and evidence events carry that revision; a slow result from an older request is discarded even if it succeeds.
+Every accepted switch transaction receives a monotonic revision and a globally unique correlation ID. Probe, confirmation, and evidence events carry both; a slow result from an older request or a coincidentally reused revision from another process lifetime is discarded even if it succeeds.
+
+Once a switch has been dispatched, do not overwrite its verification record. A newer selection may probe and occupy the one pending slot, but the dispatched transaction or its rollback settles first. If that settlement already reaches the pending target, the redundant intent is cancelled and its late completion becomes stale.
+
+The controller states are `ready`, `probing`, `queued`, `verifying`, `rolling_back`, and `degraded`. “Probe in progress” is not `ready`; exposing it explicitly is what makes cancellation and UI status unambiguous.
 
 ## Verification
 
@@ -145,11 +149,20 @@ Represent runtime truth as a structured record rather than a model-name string:
 ```text
 RouteEvidence {
   alias, provider, upstream_model, transport,
-  session_id, request_id, observed_at, expires_at
+  session_id, request_id, switch_revision, correlation_id,
+  observed_at, expires_at
 }
 ```
 
-The controller commits only when the complete route tuple matches the intended target and the session ID is exact.
+The controller commits only when the complete route tuple and exact session ID match, both transaction fields match, the evidence is unexpired, and `observed_at` is not earlier than the relevant probe/dispatch action. A still-valid observation of the same route from an earlier switch is not causal evidence for the current switch.
+
+## Typed failure cache
+
+Adapters return typed failures instead of a generic boolean. A failure with a positive `retry_after_seconds` creates an explicit `unavailable` entry until that deadline; selecting that alias is rejected with the preserved safe reason. Expired entries are removed on the next selection. Failures without a retry window are reported but not cached.
+
+## Desired-state persistence
+
+The controller writes restart intent through a narrow `StateStore` only after runtime evidence commits. The included atomic JSON store writes a temporary file, flushes it, and replaces the destination. A persisted alias absent from the current registry fails closed at controller startup. Persistence failure is a degraded state: `actual` keeps the verified runtime evidence while `desired` retains the previous restart intent.
 
 ## Rollback is also a transaction
 

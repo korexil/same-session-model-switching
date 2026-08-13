@@ -21,7 +21,7 @@ class DemoShell:
             ("assistant", f"{self.route.alias} received message {len(self.transcript) // 2}")
         )
 
-    def route_evidence(self) -> RouteEvidence:
+    def route_evidence(self, ticket: Ticket | None = None) -> RouteEvidence:
         self.clock += 1
         return RouteEvidence(
             alias=self.route.alias,
@@ -30,6 +30,8 @@ class DemoShell:
             transport=self.route.transport,
             session_id=self.session_id,
             request_id=f"demo-{int(self.clock)}",
+            switch_revision=ticket.revision if ticket else 0,
+            correlation_id=ticket.correlation_id if ticket else "initial-route",
             observed_at=self.clock,
             expires_at=self.clock + 30,
         )
@@ -53,6 +55,7 @@ def switch(shell: DemoShell, controller: SwitchController, target: str) -> None:
         session_id=shell.session_id,
         transcript_tokens=len(str(shell.transcript)),
         reserved_output_tokens=1_000,
+        now=shell.clock,
         required_capabilities=frozenset({"tools"}),
     )
     assert isinstance(ticket, Ticket)
@@ -64,6 +67,8 @@ def switch(shell: DemoShell, controller: SwitchController, target: str) -> None:
         transport=ticket.target.transport,
         session_id=shell.session_id,
         request_id=f"probe-{ticket.revision}",
+        switch_revision=ticket.revision,
+        correlation_id=ticket.correlation_id,
         observed_at=shell.clock,
         expires_at=shell.clock + 30,
     )
@@ -72,7 +77,10 @@ def switch(shell: DemoShell, controller: SwitchController, target: str) -> None:
     # The route event is control-plane evidence; it is not inserted as a fake
     # user message in the conversation transcript.
     shell.route = ticket.target
-    assert controller.verify_switch(ticket, shell.route_evidence(), now=shell.clock).action == "committed"
+    assert (
+        controller.verify_switch(ticket, shell.route_evidence(ticket), now=shell.clock).action
+        == "committed"
+    )
 
 
 def main() -> None:

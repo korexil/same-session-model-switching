@@ -49,7 +49,7 @@ python -m unittest discover -s reference -p "test_*.py"
 python scripts/privacy_check.py
 ```
 
-The demo proves A → B → A with one session ID, one transcript, and one workspace. The reference code is deliberately standard-library-only and performs no network calls. Replace its probe, dispatch, and evidence-reader boundaries with your own supported gateway and shell integration.
+The demo proves A → B → A with one session ID, one transcript, and one workspace. It performs no network calls. All reference code is standard-library-only; [`HttpBridge`](reference/http_bridge.py) supplies a generic client contract for replacing the demo boundaries with your supported gateway and shell integration.
 
 Expected demo result:
 
@@ -66,7 +66,7 @@ This repository is sufficient to reproduce and test the **same-session control p
 - supported provider credentials for every route;
 - an exact-session evidence reader for your shell/gateway versions.
 
-Those four pieces are environment-specific. The repository gives their exact contracts and acceptance tests, but cannot ship another person's provider entitlement or promise that a consumer OAuth grant is portable. With supported API/provider-key routes, the integration is direct; native subscription routes work only where the provider supports the client or connector.
+Those four pieces are environment-specific. The repository gives their exact contracts, a generic HTTP bridge client, and acceptance tests, but cannot ship another person's provider entitlement or promise that a consumer OAuth grant is portable. With supported API/provider-key routes, the integration is direct; native subscription routes work only where the provider supports the client or connector.
 
 ## Three different things people call “subscription”
 
@@ -82,9 +82,9 @@ For example, Codex supports ChatGPT sign-in in official Codex clients, Gemini CL
 
 1. A model appearing in `/models` is discovery, not proof that a completion works.
 2. `desired`, `actual`, `pending`, and `unavailable` are separate states.
-3. Every switch request receives a monotonic revision; an older slow probe cannot override a newer choice.
+3. Every accepted switch transaction receives a monotonic revision and unique correlation ID; an older or unrelated result cannot override a newer choice.
 4. Busy sessions keep only the latest pending request and re-probe expired evidence at dispatch.
-5. Runtime truth is structured evidence: provider, upstream model, transport, request ID, exact session ID, and observation time.
+5. Runtime truth is causally bound structured evidence: provider, upstream model, transport, request ID, exact session ID, revision, correlation ID, and observation time after the action.
 6. A failed switch preserves the previous route. A failed rollback enters `degraded/actual_unknown`; it never reports optimistic success.
 7. Current transcript size and required tools are checked against the target route before dispatch.
 8. OAuth is used only by the client/adapter for which the provider supports it.
@@ -109,8 +109,10 @@ The example registry is fictional and makes no claim that a named commercial rou
 - [Subscription vs API](docs/subscription-vs-api.md) — billing/auth boundaries
 - [Architecture](docs/architecture.md) — components and data flow
 - [Controller reference](reference/switch_controller.py) — executable state machine
+- [HTTP bridge client](reference/http_bridge.py) — generic live probe/dispatch/evidence contract
+- [Atomic state store](reference/state_store.py) — atomic, non-secret desired-route persistence
 - [Runnable demonstration](reference/demo.py) — credential-free A → B → A continuity proof
-- [Controller tests](reference/test_switch_controller.py) — races, expiry, rollback, and degraded state
+- [Reference tests](reference) — races, stale evidence, cancellation, persistence, bridge parsing, rollback, and degraded state
 - [Adapter contract](docs/adapter-contract.md) — provider-neutral transport contract
 - [Session continuity](docs/session-continuity.md) — what crosses a switch
 - [Failure modes](docs/failure-modes.md) — misleading signals and recovery rules

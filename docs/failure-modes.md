@@ -78,7 +78,19 @@ If the launcher, control panel, switch script, and gateway each maintain a list,
 
 **Symptoms:** the operator selects B and then C, but B's slower health check finishes last and switches the shell back to B.
 
-**Rule:** allocate a monotonic revision before each probe. Probe, queue, dispatch, confirmation, and evidence must all match the latest revision; older completions are `superseded`.
+**Rule:** allocate a monotonic revision and unique correlation ID before each accepted probe. Probe, queue, dispatch, confirmation, and evidence must all match the latest transaction; older completions are `superseded`.
+
+## Valid evidence proves the wrong switch
+
+**Symptoms:** a previous A → B response remains inside its TTL, so a new A → B request appears verified before the new dispatch produces any evidence.
+
+**Rule:** TTL and route equality are necessary but insufficient. Require matching revision and correlation ID, plus `observed_at >= requested_at` for probes and `observed_at >= dispatched_at` for commits. Reject a prior same-route observation even while it remains unexpired.
+
+## Cancelling back to the current route does nothing
+
+**Symptoms:** B is being probed, the operator selects the currently active A, the UI reports a no-op, and B switches in later.
+
+**Rule:** selecting the active route while another probe or queued intent exists is cancellation, not a no-op. Advance the revision and clear the in-flight intent so its completion becomes stale.
 
 ## Queued evidence expires before dispatch
 
@@ -97,6 +109,8 @@ If the launcher, control panel, switch script, and gateway each maintain a list,
 Updating the persisted target before probing means a failed switch also breaks the next restart.
 
 **Rule:** runtime verify first, persistence commit second. On failure, preserve old desired state unless the operator explicitly changes restart policy.
+
+If runtime verification succeeds but the desired-state write fails, keep the verified `actual`, retain the old `desired`, and report `degraded/persistence_failed`. Do not roll back a healthy runtime route merely to hide a storage fault.
 
 ## Automatic fallback becomes invisible substitution
 

@@ -64,13 +64,13 @@
 
 **Trade-off:** Some attractive model routes remain documented but intentionally non-switchable.
 
-## ADR-009: Every switch is revisioned
+## ADR-009: Every accepted switch transaction is causally identified
 
-**Decision:** Allocate a monotonic revision before probing and carry it through queueing, dispatch, confirmation, and observation.
+**Decision:** Allocate a monotonic revision and unique correlation ID before probing and carry both through queueing, dispatch, confirmation, and observation. Evidence must also postdate the action it proves.
 
-**Why:** Asynchronous probes and UI clicks can finish out of order. Last-writer-wins must be enforced by the controller rather than guessed from arrival time.
+**Why:** Asynchronous probes and UI clicks can finish out of order. A revision alone can be reused after restart, and an unexpired same-route observation can belong to a prior switch. Last-writer-wins and causal verification must be enforced by the controller rather than guessed from arrival time.
 
-**Trade-off:** Adapters and control events need one extra correlation field.
+**Trade-off:** Adapters and control events must echo two transaction fields and trustworthy timestamps.
 
 ## ADR-010: Rollback requires evidence
 

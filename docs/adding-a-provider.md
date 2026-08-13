@@ -39,7 +39,7 @@ Use this as an evidence ladder. Do not add the model to the main selector before
 
 - A conversation switches A → target → A without losing visible transcript or workspace state.
 - Busy-session switching queues and later applies.
-- Multiple rapid choices use last-writer-wins behavior.
+- Multiple rapid choices before dispatch use last-writer-wins behavior; a choice after dispatch waits for the active transaction to settle.
 - Desired state updates only after verification.
 
 ### `tool-verified`

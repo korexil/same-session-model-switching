@@ -28,7 +28,7 @@ NormalizedRequest {
   temperature?
   reasoning?
   images?
-  metadata { session_id, request_id, switch_revision }
+  metadata { session_id, request_id, switch_revision, correlation_id }
 }
 ```
 
@@ -50,7 +50,7 @@ error { typed_failure }
 
 The gateway should preserve ordering and stable tool-call IDs. Providers disagree on whether tool arguments arrive as JSON fragments, complete objects, or text; normalization must handle incremental parsing without inventing missing data.
 
-The gateway should also expose the resolved route as structured, secret-free evidence: alias, provider, upstream model, transport, session ID, request ID, observation time, and expiry. A display name alone cannot detect fallback or alias drift.
+The gateway should also expose the resolved route as structured, secret-free evidence: alias, provider, upstream model, transport, session ID, request ID, switch revision, correlation ID, observation time, and expiry. A display name alone cannot detect fallback or alias drift. The controller must reject evidence that predates the action it claims to prove.
 
 ## Typed failures
 
@@ -68,6 +68,20 @@ At minimum, distinguish:
 | `protocol_violation` | malformed stream or tool call | abort stream; preserve evidence |
 
 Do not collapse all failures into “model unavailable.” Operators need to know whether to wait, fix credentials, update an alias, or disable a capability.
+
+The provider adapter and the shell bridge use the same result shape:
+
+```text
+ProbeResult = RouteEvidence | TypedFailure
+
+TypedFailure {
+  kind
+  safe_reason
+  retry_after_seconds?
+}
+```
+
+`safe_reason` is suitable for logs and UI; it must not contain raw provider bodies, tokens, cookies, or authorization headers. A positive retry interval may be used as a negative-cache TTL.
 
 ## Capability negotiation
 
