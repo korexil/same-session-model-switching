@@ -1,0 +1,111 @@
+# Failure modes and lessons
+
+These are the failure shapes that matter most in long-running, same-session switching. They are phrased generically and contain no deployment-specific code or paths.
+
+## Discovery is not availability
+
+**Misleading signal:** the gateway lists a model successfully.
+
+**What can still be broken:** quota, OAuth scope, upstream route, model entitlement, request format, or provider health.
+
+**Rule:** probe with a minimal real completion through the same protocol, auth profile, alias, and context carrier that the shell will use.
+
+## Desired model is not actual model
+
+**Misleading signal:** a config file or UI says the target model.
+
+**What can still be broken:** the shell rejected the command, displayed a confirmation menu, auto-fell back, or the gateway substituted another route.
+
+**Rule:** expose desired, actual, pending, and unavailable separately. Commit desired state only after exact-session runtime evidence matches.
+
+## “Latest transcript” belongs to the wrong session
+
+**Misleading signal:** the newest transcript file reports the probed model.
+
+**What can still be broken:** an isolated probe, nested agent, or parallel session updated that file most recently.
+
+**Rule:** persist a session ID at launch and read only its transcript.
+
+## Switching while the shell is busy
+
+**Symptoms:** command text appears in the prompt buffer, a hidden confirmation blocks the shell, generation is interrupted, or the request is lost.
+
+**Rule:** probe immediately, but queue application until a verified idle boundary. Use one last-writer-wins pending slot rather than an unbounded queue.
+
+## Confirmation UI is part of the protocol
+
+Some shells present an interactive “switch model?” confirmation for aliases or provider changes. Treat this as a state, not as unexpected text. Correlate the confirmation to the requested target, choose only the expected action, and then verify the result.
+
+Blind key injection is unsafe: terminal width, localization, and version changes can move the selection.
+
+## Model aliases lie about context
+
+A custom alias may route to the correct upstream while the shell assumes its default context size. Long conversations then compact early, or a large request fails unexpectedly.
+
+**Rule:** keep upstream ID, selection alias, and provider-scoped context window separate. Verify the exact alias used by the shell.
+
+## Same model, different provider, different capability
+
+Context length, tool use, images, prompt caching, and reasoning controls may differ between providers for the same marketed model.
+
+**Rule:** registry keys should include provider identity. Never merge capability evidence solely by base model name.
+
+## OAuth is not a portable API key
+
+An OAuth login can succeed in an official product while requests through another shell fail—or violate the intended authorization boundary.
+
+**Rule:** only advertise adapters whose auth path is explicitly supported. For example, a Gemini target is a valid architectural adapter, but an OAuth grant bound to an official Gemini client should not be presented as a generic CC gateway credential.
+
+## Health checks test the wrong layer
+
+**Misleading signal:** gateway process exists, TCP port is open, or `/models` returns 200.
+
+**Rule:** distinguish liveness from readiness. Startup readiness and pre-switch probing should send a real request. The probe itself must report whether it failed because of auth, quota, transport, or protocol.
+
+## Error detail disappears between layers
+
+Gateway says “429 quota”; backend converts it to “500”; web server returns “HTTP Error”; UI says “switch failed.” The operator cannot tell whether to wait or repair configuration.
+
+**Rule:** normalize typed failures once, preserve a safe human-readable reason through every layer, and never expose credentials or raw provider bodies.
+
+## Multiple model lists drift
+
+If the launcher, control panel, switch script, and gateway each maintain a list, one layer will accept an option another layer cannot route.
+
+**Rule:** generate views from one registry. Add an invariant test comparing every selectable UI value with registry output.
+
+## A slow probe wins after a newer choice
+
+**Symptoms:** the operator selects B and then C, but B's slower health check finishes last and switches the shell back to B.
+
+**Rule:** allocate a monotonic revision before each probe. Probe, queue, dispatch, confirmation, and evidence must all match the latest revision; older completions are `superseded`.
+
+## Queued evidence expires before dispatch
+
+**Symptoms:** a model probed healthy while the shell was busy, then quota or authentication changed before the session became idle.
+
+**Rule:** evidence has an expiry time. Re-probe at the idle boundary if its TTL elapsed; do not treat the old result as a permit.
+
+## Rollback acknowledgement is mistaken for recovery
+
+**Symptoms:** the target fails, a rollback command is sent, and the UI claims the old model even though no subsequent route evidence exists.
+
+**Rule:** verify rollback like a forward switch. If it cannot be verified, clear `actual` and expose `degraded/actual_unknown`.
+
+## A failed switch poisons restart state
+
+Updating the persisted target before probing means a failed switch also breaks the next restart.
+
+**Rule:** runtime verify first, persistence commit second. On failure, preserve old desired state unless the operator explicitly changes restart policy.
+
+## Automatic fallback becomes invisible substitution
+
+Fallback improves availability but can silently change cost, capability, privacy boundary, or behavior.
+
+**Rule:** make fallback policy explicit and record the actual model. Never label a response as the requested model after substitution.
+
+## Probe passes but tools fail
+
+A one-token text completion does not prove tool calls, images, streaming, or long context.
+
+**Rule:** support levels are cumulative. `probeable` is not `tool-verified` or `continuity-verified`.

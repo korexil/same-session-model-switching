@@ -1,0 +1,59 @@
+# Fictional schema example only. No entry is a claim of current provider support.
+# Credentials belong in an external secret store, never in this registry.
+schema_version: 2
+
+models:
+  - alias: native-shell-example
+    provider: example-provider-a
+    upstream_model: example-model-a
+    route_id: native-a
+    transport: native-shell
+    auth_mode: native_subscription
+    context_window: 200000
+    safety_margin_tokens: 8192
+    capabilities: [streaming, tools, images]
+    support:
+      evidence_level: documented
+      evidence_ref: null
+      verified_at: null
+      evidence_ttl_seconds: 0
+
+  - alias: usage-api-example
+    provider: example-provider-b
+    upstream_model: example-model-b
+    route_id: gateway-b
+    transport: anthropic-compatible-gateway
+    auth_mode: provider_api_key
+    context_window: 128000
+    safety_margin_tokens: 8192
+    capabilities: [streaming, tools]
+    support:
+      evidence_level: documented
+      evidence_ref: null
+      verified_at: null
+      evidence_ttl_seconds: 0
+
+  - alias: fixed-plan-key-example
+    provider: example-provider-c
+    upstream_model: example-model-c
+    route_id: gateway-c
+    transport: anthropic-compatible-gateway
+    auth_mode: plan_api_key
+    context_window: 100000
+    safety_margin_tokens: 8192
+    capabilities: [streaming]
+    support:
+      evidence_level: documented
+      evidence_ref: null
+      verified_at: null
+      evidence_ttl_seconds: 0
+
+policies:
+  require_real_probe_before_switch: true
+  apply_only_when_shell_idle: true
+  pending_mode: last_writer_wins
+  reprobe_expired_evidence_at_dispatch: true
+  verify_from_exact_session_evidence: true
+  commit_desired_state_after_verification: true
+  failed_rollback_state: degraded_actual_unknown
+  fallback_requires_explicit_order: true

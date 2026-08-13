@@ -1,0 +1,10 @@
+.DS_Store
+*.log
+*.tmp
+.env
+.env.*
+secrets/
+credentials/
+.privacy-denylist
+__pycache__/
+*.pyc
