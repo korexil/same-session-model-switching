@@ -74,6 +74,8 @@ Treat context metadata as provider-scoped and verified. If the shell needs a spe
 
 The preflight must use the current transcript estimate plus serialized tool schemas, system/control material, reserved output, and a safety margin. A static advertised window is a ceiling, not proof that the current session fits.
 
+Do not compact on every switch. Switch directly when the complete request fits. When it does not, compact before dispatch while a verified route can still carry the uncompressed request. If the current route is unavailable, use a verified recovery route large enough for the raw request; if none exists, create a bounded handoff and start a new session. See [context-window recovery](context-window-recovery.md) and the executable [context planner](../reference/context_planner.py).
+
 ## Tool continuity
 
 The transcript may contain tool schemas and prior tool results. Before switching, ensure the target can continue with the session's required tool profile. A plain-text probe is insufficient for `tool-verified` status; run a harmless tool-call probe and verify:

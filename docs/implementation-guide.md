@@ -103,6 +103,8 @@ transcript_tokens
 
 If it does not fit, reject visibly or ask the shell to compact before switching. Do not change the alias metadata merely to suppress a legitimate compact.
 
+Use the decision procedure in [context-window recovery](context-window-recovery.md). In particular, compaction must run on a route that can still accept the uncompressed request. If the selected backend is already returning auth, quota, or size errors, repeatedly invoking the shell's automatic compact through that route is a deadlock, not recovery.
+
 ## 7. Wire the control surface
 
 The UI sends only a registry alias and expected current revision. It never accepts arbitrary base URLs, model strings, commands, or credential paths.

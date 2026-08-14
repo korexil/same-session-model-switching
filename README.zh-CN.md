@@ -1,6 +1,6 @@
 # 同场换模型：保留会话，只换后端
 
-[English](README.md) · [实现指南](docs/implementation-guide.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
+[English](README.md) · [实现指南](docs/implementation-guide.md) · [上下文恢复](docs/context-window-recovery.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
 
 这个仓库公开的是一套可复现、已去除私人信息的方案：让 Claude Code 风格的长运行 Agent 外壳继续持有同一个 session、对话、工具和工作区，只切换后端模型。
 
@@ -113,6 +113,7 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 - [参考测试](reference)：竞态、陈旧证据、取消、持久化、bridge 解析、回滚与降级
 - [适配器契约](docs/adapter-contract.md)：供应商无关协议
 - [会话连续性](docs/session-continuity.md)：换模后继承什么
+- [上下文窗口恢复](docs/context-window-recovery.md)：直切、切前压缩、恢复路由与有界交接
 - [失败模式](docs/failure-modes.md)：假成功、误判与恢复
 - [安全](docs/security.md)：凭据与公开前检查
 - [接入供应商](docs/adding-a-provider.md)：逐级证据清单

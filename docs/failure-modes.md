@@ -44,6 +44,14 @@ A custom alias may route to the correct upstream while the shell assumes its def
 
 **Rule:** keep upstream ID, selection alias, and provider-scoped context window separate. Verify the exact alias used by the shell.
 
+## Automatic compaction retries an impossible route
+
+**Symptoms:** after switching a long session, the shell repeatedly tries to compact but every attempt returns a size, auth, quota, or provider error.
+
+**Cause:** compaction itself uses the selected backend, so the recovery request is sent through the same route that cannot accept it.
+
+**Rule:** preflight before dispatch. Compact on the current verified route, or temporarily use a verified recovery route that can carry the raw request. If neither exists, stop retrying and start a new session from a bounded handoff. See [context-window recovery](context-window-recovery.md).
+
 ## Same model, different provider, different capability
 
 Context length, tool use, images, prompt caching, and reasoning controls may differ between providers for the same marketed model.

@@ -2,7 +2,7 @@
 
 > Keep the shell, transcript, tools, and workspace. Replace only the model backend.
 
-[简体中文](README.zh-CN.md) · [Implementation guide](docs/implementation-guide.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
+[简体中文](README.zh-CN.md) · [Implementation guide](docs/implementation-guide.md) · [Context recovery](docs/context-window-recovery.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
 
 This repository is a privacy-clean reference architecture and executable control-plane example for switching model backends inside one long-running Claude Code-style session.
 
@@ -115,6 +115,7 @@ The example registry is fictional and makes no claim that a named commercial rou
 - [Reference tests](reference) — races, stale evidence, cancellation, persistence, bridge parsing, rollback, and degraded state
 - [Adapter contract](docs/adapter-contract.md) — provider-neutral transport contract
 - [Session continuity](docs/session-continuity.md) — what crosses a switch
+- [Context-window recovery](docs/context-window-recovery.md) — direct switch, pre-switch compact, recovery route, or bounded handoff
 - [Failure modes](docs/failure-modes.md) — misleading signals and recovery rules
 - [Security](docs/security.md) — credential and publication hygiene
 - [Provider checklist](docs/adding-a-provider.md) — evidence ladder
