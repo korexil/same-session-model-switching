@@ -58,6 +58,18 @@ Context length, tool use, images, prompt caching, and reasoning controls may dif
 
 **Rule:** registry keys should include provider identity. Never merge capability evidence solely by base model name.
 
+## A global gateway switch degrades routes that never needed it
+
+**Misleading signal:** after pointing the shell at the gateway, every model still answers correctly. Switching works. Nothing errors.
+
+**What can still be broken:** a capability the *native* route carried — extended prompt-cache TTL, provider beta headers, reasoning controls — can be dropped in transit. The request succeeds and the content looks right; only the cost profile changes.
+
+**Why it survives review:** the models that *required* the gateway usually cannot use that capability anyway, so its absence looks normal. The entire cost falls on the models that did not need the gateway at all — they were routed through it only because the switch was global. A capability regression can therefore run for weeks while every functional check stays green.
+
+**Rule:** make route selection per-model, not a global mode. The operator switch should mean *“is the gateway available”*, not *“does everything go through the gateway”*. A model the native route can serve should take the native route even while the gateway is enabled; keep the global switch as an availability flag that the per-model decision reads.
+
+**Rule:** liveness and readiness probes do not catch this — the request succeeds. Assert the capability itself: read back the provider's own accounting for the feature you depend on (usage or billing fields, response headers, echoed request options) and alert when it changes. A silent downgrade has no error surface; the only witness is the field itself.
+
 ## OAuth is not a portable API key
 
 An OAuth login can succeed in an official product while requests through another shell fail—or violate the intended authorization boundary.
