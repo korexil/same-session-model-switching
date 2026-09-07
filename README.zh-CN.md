@@ -1,6 +1,6 @@
 # 同场换模型：保留会话，只换后端
 
-[English](README.md) · [Live minimal](examples/live-minimal/README.md) · [实现指南](docs/implementation-guide.md) · [上下文恢复](docs/context-window-recovery.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
+[English](README.md) · [Live minimal](examples/live-minimal/README.md) · [支持矩阵](SUPPORT.md) · [实现指南](docs/implementation-guide.md) · [上下文恢复](docs/context-window-recovery.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
 
 这个仓库公开的是一套可复现、已去除私人信息的方案：让 Claude Code 风格的长运行 Agent 外壳继续持有同一个 session、对话、工具和工作区，只切换后端模型。
 
@@ -127,6 +127,8 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 - [实现指南](docs/implementation-guide.md)：实际搭建顺序与验收
 - [真实接入路线](docs/live-reproduction.md)：怎样替换演示中的三个边界
 - [Live minimal 实弹 harness](examples/live-minimal/README.md)：仅用合成数据发真实请求并生成无密回执
+- [支持与证据矩阵](SUPPORT.md)：精确实测版本、可声称等级和未验证边界
+- [版本记录](CHANGELOG.md)：按版本冻结的公开证据快照
 - [订阅与 API](docs/subscription-vs-api.md)：账单、鉴权与可移植性边界
 - [架构](docs/architecture.md)：组件与数据流
 - [控制器参考实现](reference/switch_controller.py)：可执行状态机

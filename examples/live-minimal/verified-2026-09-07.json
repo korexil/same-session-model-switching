@@ -9,7 +9,8 @@
   "claim": "live_minimal_a_b_a_continuity_and_tool_use",
   "environment": {
     "gateway_version": "CLIProxyAPI 7.2.128 (bd34ceca)",
-    "harness_sha256": "d8b131ecf4929ceab72cb7f6c30780b1105def062eaac9d3723863dd235132d8"
+    "harness_hash_canonicalization": "utf8_lf",
+    "harness_sha256": "87fa17ffb97691077269136efadc5901db55ce1da960c9b7b574976b15fbbbbc"
   },
   "observed_on_utc": "2026-09-07",
   "privacy": {
@@ -26,9 +27,9 @@
       "content_types": [
         "text"
       ],
-      "input_tokens": 327,
+      "input_tokens": 325,
       "output_tokens": 6,
-      "request_id_sha256_12": "e183f9b3632f",
+      "request_id_sha256_12": "4ac307379c7b",
       "requested_model": "gpt-5.6-sol",
       "returned_model": "gpt-5.6-sol",
       "step": "A1",
@@ -40,7 +41,7 @@
         "claude-haiku-4-5-20251001"
       ],
       "requested_model": "claude-haiku-4-5-20251001",
-      "session_id_sha256_12": "49c989544fe5",
+      "session_id_sha256_12": "4f8ca42ce6d0",
       "step": "B",
       "transport": "official_claude_code_cli",
       "turns": 2
@@ -50,9 +51,9 @@
         "thinking",
         "text"
       ],
-      "input_tokens": 414,
-      "output_tokens": 71,
-      "request_id_sha256_12": "d93abb670d61",
+      "input_tokens": 407,
+      "output_tokens": 83,
+      "request_id_sha256_12": "31efdd32b65a",
       "requested_model": "gpt-5.6-sol",
       "returned_model": "gpt-5.6-sol",
       "step": "A2",
@@ -60,7 +61,7 @@
     }
   ],
   "session": {
-    "id_sha256_12": "66a4e1deb6e9",
+    "id_sha256_12": "904c830365e8",
     "owner": "live_minimal_python_process",
     "same_transcript_object": true
   }

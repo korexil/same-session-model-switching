@@ -63,6 +63,9 @@ The ignore rules exclude `live-receipt*.json`. Review the receipt before
 sharing it anyway: a model name or version can still be operational metadata in
 some environments.
 
+The harness digest canonicalizes UTF-8 source to LF before hashing, so the same
+Git content verifies on Windows and Unix checkouts.
+
 A secret-free receipt from the environment used to develop this example is
 committed as [`verified-2026-09-07.json`](verified-2026-09-07.json).
 It is evidence for those exact versions and routes, not a promise of current
