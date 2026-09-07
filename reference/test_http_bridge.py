@@ -4,6 +4,8 @@ from unittest.mock import patch
 from urllib.error import HTTPError
 
 from http_bridge import HttpBridge
+from http_demo import run_demo
+from mock_bridge import MockBridgeState, running_mock_bridge
 from switch_controller import FailureKind, ModelEntry, RouteEvidence, Ticket, TypedFailure
 
 
@@ -130,6 +132,24 @@ class HttpBridgeTests(unittest.TestCase):
         result = HttpBridge("https://bridge.example").probe(ticket())
         self.assertEqual(FailureKind.RATE_LIMITED, result.kind)
         self.assertEqual(12.0, result.retry_after_seconds)
+
+    def test_runnable_bridge_crosses_http_and_preserves_session(self):
+        result = run_demo(show_receipts=False)
+        self.assertTrue(result["same_session"])
+        self.assertTrue(result["workspace_preserved"])
+        self.assertTrue(result["exact_session_evidence"])
+
+    def test_mock_bridge_rejects_evidence_before_dispatch(self):
+        target = ticket()
+        state = MockBridgeState(
+            {target.target.alias: target.target},
+            {target.session_id: target.target.alias},
+        )
+        with running_mock_bridge(state) as base_url:
+            result = HttpBridge(base_url).observe(target)
+        self.assertIsInstance(result, TypedFailure)
+        self.assertEqual(FailureKind.PROTOCOL_VIOLATION, result.kind)
+        self.assertEqual("switch_transaction_not_observed", result.safe_reason)
 
 
 if __name__ == "__main__":

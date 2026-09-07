@@ -2,6 +2,41 @@
 
 The included demo proves the controller and continuity invariants without credentials. A live reproduction adds four replaceable pieces; none should be rewritten inside the controller.
 
+## First cross the real HTTP boundary locally
+
+Before adding credentials or a provider SDK, run:
+
+```sh
+python3 reference/http_demo.py
+# Windows Python launcher: py -3 reference/http_demo.py
+```
+
+Unlike the smallest in-memory demo, this starts [`reference/mock_bridge.py`](../reference/mock_bridge.py) on an ephemeral loopback port and exercises the same `POST /v1/probe`, `/v1/switch`, and `/v1/evidence` requests used by a live bridge. Its two switch receipts prove that revision, correlation, resolved route, request ID, and exact session ID survive JSON serialization and the HTTP boundary.
+
+The routes remain fictional. This deliberately separates two questions: first prove that your controller/bridge assembly is correct; then replace the mock state with supported shell and provider calls. A failing local rehearsal is a contract bug. A passing rehearsal followed by a failing live request narrows the fault to the shell command, gateway route, credential, provider, or evidence reader.
+
+## Codex App Server boundary
+
+Codex App Server can be a session owner, but it is not automatically a provider-neutral session carrier. The [official OpenAI App Server documentation](https://developers.openai.com/codex/app-server) defines a thread as a Codex conversation, exposes `thread/start`, `thread/resume`, and `thread/fork`, and lets `turn/start` override the model for a turn.
+
+That gives two different integration claims:
+
+- Switching among models supported by the same App Server thread can use its recorded `thread.id` (and returned `thread.sessionId`) as session evidence. Pin the Codex version and test the exact thread/turn schema and event stream you deploy.
+- Moving between Codex App Server and a non-Codex provider requires an outer shell or gateway to own the provider-neutral transcript, tools, and workspace. Treat each provider-owned thread as adapter-local state and refill it from the outer record. Without that outer owner, this is a bounded handoff between provider sessions, not literal same-session switching.
+
+The second point is an architectural consequence of the documented ownership boundary, not an OpenAI promise of cross-provider thread portability.
+
+## Freeze the live evidence environment
+
+A passing integration claim should identify the exact environment that produced it:
+
+```text
+shell version + gateway release + adapter commit + registry digest
++ auth mode + route alias + provider/upstream model + captured_at
+```
+
+Keep redacted request/event fixtures beside adapter tests. Re-run the probe, A → B → A continuity case, tool case, and long-context case whenever a version or registry digest changes. Process liveness or an old successful receipt does not validate a new protocol release.
+
 ## Required pieces
 
 | Piece | Reusable option | Evidence required before claiming success |
