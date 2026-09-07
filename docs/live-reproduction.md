@@ -57,6 +57,14 @@ For the first live build, use two providers whose credentials are explicitly int
 5. Implement `probe`, `dispatch_switch`, and `observe_route` from the [implementation guide](implementation-guide.md).
 6. Run the full A → B → A acceptance list and retain secret-free route evidence.
 
+For a concrete intermediate step, run the opt-in
+[`examples/live-minimal`](../examples/live-minimal/README.md) harness. It keeps
+one provider-neutral transcript and one temporary workspace while route A uses
+an Anthropic-compatible gateway and route B uses the official Claude Code CLI.
+The example intentionally strips provider-private reasoning blocks at the
+session boundary and publishes only resolved model/version metadata, usage,
+boolean assertions, and hashed opaque IDs.
+
 ## Generic bridge contract
 
 [`reference/http_bridge.py`](../reference/http_bridge.py) provides the client side of a small vendor-neutral bridge. It accepts plain HTTP only for loopback hosts; remote endpoints must use HTTPS. An optional bearer token protects your bridge itself and is never part of route evidence.

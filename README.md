@@ -2,7 +2,7 @@
 
 > Keep the shell, transcript, tools, and workspace. Replace only the model backend.
 
-[简体中文](README.zh-CN.md) · [Implementation guide](docs/implementation-guide.md) · [Context recovery](docs/context-window-recovery.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
+[简体中文](README.zh-CN.md) · [Live minimal](examples/live-minimal/README.md) · [Implementation guide](docs/implementation-guide.md) · [Context recovery](docs/context-window-recovery.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
 
 This repository is a privacy-clean reference architecture and executable control-plane example for switching model backends inside one long-running Claude Code-style session.
 
@@ -26,6 +26,8 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 ```
 
 This is a networked rehearsal, not a commercial-model claim: the included server uses fictional in-memory routes and no credentials. To go live, keep the controller and [`HttpBridge`](reference/http_bridge.py), then replace [`MockBridgeState`](reference/mock_bridge.py) with the three shell/gateway operations in the [live reproduction guide](docs/live-reproduction.md).
+
+When that passes, [`examples/live-minimal`](examples/live-minimal/README.md) adds an explicit, billable A → B → A test using an Anthropic-compatible gateway and the official Claude Code CLI. It defaults to a zero-credential `--check`; only `--live` reads secrets or sends requests.
 
 ## What makes it the same session?
 
@@ -126,6 +128,7 @@ The example registry is fictional and makes no claim that a named commercial rou
 
 - [Implementation guide](docs/implementation-guide.md) — build order and acceptance test
 - [Live reproduction path](docs/live-reproduction.md) — how to replace the three demo boundaries
+- [Live minimal harness](examples/live-minimal/README.md) — opt-in commercial requests with synthetic data and a secret-free receipt
 - [Subscription vs API](docs/subscription-vs-api.md) — billing/auth boundaries
 - [Architecture](docs/architecture.md) — components and data flow
 - [Controller reference](reference/switch_controller.py) — executable state machine

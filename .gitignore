@@ -5,6 +5,7 @@
 .env.*
 secrets/
 credentials/
+live-receipt*.json
 .privacy-denylist
 __pycache__/
 *.pyc
