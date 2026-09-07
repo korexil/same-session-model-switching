@@ -1,5 +1,4 @@
 import importlib.util
-import hashlib
 import json
 import subprocess
 import sys
@@ -51,9 +50,20 @@ class LiveMinimalTests(unittest.TestCase):
     def test_verified_receipt_is_bound_to_exact_harness(self):
         receipt_path = SCRIPT.with_name("verified-2026-09-07.json")
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-        digest = hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+        digest = live_minimal.canonical_source_hash(SCRIPT)
         self.assertEqual("PASS", receipt["result"])
         self.assertEqual(digest, receipt["environment"]["harness_sha256"])
+
+    def test_harness_hash_is_line_ending_independent(self):
+        with tempfile.TemporaryDirectory() as directory:
+            lf = Path(directory) / "lf.py"
+            crlf = Path(directory) / "crlf.py"
+            lf.write_bytes(b"print('same')\n")
+            crlf.write_bytes(b"print('same')\r\n")
+            self.assertEqual(
+                live_minimal.canonical_source_hash(lf),
+                live_minimal.canonical_source_hash(crlf),
+            )
 
     def test_check_mode_is_explicitly_offline(self):
         result = subprocess.run(

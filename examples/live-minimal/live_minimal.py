@@ -69,6 +69,13 @@ def short_hash(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()[:12]
 
 
+def canonical_source_hash(path: Path) -> str:
+    """Hash UTF-8 source with canonical LF line endings across Git checkouts."""
+    text = path.read_text(encoding="utf-8")
+    canonical = text.replace("\r\n", "\n").replace("\r", "\n")
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def messages_url(base_url: str) -> str:
     parsed = urllib.parse.urlparse(base_url)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
@@ -304,7 +311,8 @@ def run_live(
         },
         "environment": {
             "gateway_version": config.gateway_version,
-            "harness_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+            "harness_sha256": canonical_source_hash(Path(__file__)),
+            "harness_hash_canonicalization": "utf8_lf",
         },
         "sequence": [
             {

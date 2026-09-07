@@ -2,7 +2,7 @@
 
 > Keep the shell, transcript, tools, and workspace. Replace only the model backend.
 
-[简体中文](README.zh-CN.md) · [Live minimal](examples/live-minimal/README.md) · [Implementation guide](docs/implementation-guide.md) · [Context recovery](docs/context-window-recovery.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
+[简体中文](README.zh-CN.md) · [Live minimal](examples/live-minimal/README.md) · [Support matrix](SUPPORT.md) · [Implementation guide](docs/implementation-guide.md) · [Context recovery](docs/context-window-recovery.md) · [Subscription vs API](docs/subscription-vs-api.md) · [Architecture](docs/architecture.md)
 
 This repository is a privacy-clean reference architecture and executable control-plane example for switching model backends inside one long-running Claude Code-style session.
 
@@ -129,6 +129,8 @@ The example registry is fictional and makes no claim that a named commercial rou
 - [Implementation guide](docs/implementation-guide.md) — build order and acceptance test
 - [Live reproduction path](docs/live-reproduction.md) — how to replace the three demo boundaries
 - [Live minimal harness](examples/live-minimal/README.md) — opt-in commercial requests with synthetic data and a secret-free receipt
+- [Support and evidence matrix](SUPPORT.md) — exact verified versions, claim levels, and unverified boundaries
+- [Changelog](CHANGELOG.md) — versioned public evidence snapshots
 - [Subscription vs API](docs/subscription-vs-api.md) — billing/auth boundaries
 - [Architecture](docs/architecture.md) — components and data flow
 - [Controller reference](reference/switch_controller.py) — executable state machine
