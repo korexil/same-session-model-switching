@@ -1,6 +1,6 @@
 # 同场换模型：保留会话，只换后端
 
-[English](README.md) · [实现指南](docs/implementation-guide.md) · [上下文恢复](docs/context-window-recovery.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
+[English](README.md) · [Live minimal](examples/live-minimal/README.md) · [实现指南](docs/implementation-guide.md) · [上下文恢复](docs/context-window-recovery.md) · [订阅与 API](docs/subscription-vs-api.md) · [架构](docs/architecture.md)
 
 这个仓库公开的是一套可复现、已去除私人信息的方案：让 Claude Code 风格的长运行 Agent 外壳继续持有同一个 session、对话、工具和工作区，只切换后端模型。
 
@@ -24,6 +24,8 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 ```
 
 这是带网络边界的排练，不是“商业模型已经实测”的声明：内置服务只使用虚构的内存路由，不读凭据。真实接入时保留控制器和 [`HttpBridge`](reference/http_bridge.py)，再把 [`MockBridgeState`](reference/mock_bridge.py) 换成[真实接入路线](docs/live-reproduction.md)中的三项外壳/网关操作。
+
+排练通过后，可运行 [`examples/live-minimal`](examples/live-minimal/README.md) 做显式开启、可能计费的 A → B → A 实测：A 走 Anthropic 兼容网关，B 走官方 Claude Code CLI。默认 `--check` 不读凭据、不联网；只有 `--live` 才会发请求。
 
 ## 为什么仍是“同一场”
 
@@ -124,6 +126,7 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 
 - [实现指南](docs/implementation-guide.md)：实际搭建顺序与验收
 - [真实接入路线](docs/live-reproduction.md)：怎样替换演示中的三个边界
+- [Live minimal 实弹 harness](examples/live-minimal/README.md)：仅用合成数据发真实请求并生成无密回执
 - [订阅与 API](docs/subscription-vs-api.md)：账单、鉴权与可移植性边界
 - [架构](docs/architecture.md)：组件与数据流
 - [控制器参考实现](reference/switch_controller.py)：可执行状态机

@@ -1,5 +1,8 @@
 import json
+import subprocess
+import sys
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 from urllib.error import HTTPError
 
@@ -138,6 +141,18 @@ class HttpBridgeTests(unittest.TestCase):
         self.assertTrue(result["same_session"])
         self.assertTrue(result["workspace_preserved"])
         self.assertTrue(result["exact_session_evidence"])
+
+    def test_http_demo_cli_entrypoint_reports_pass(self):
+        script = Path(__file__).with_name("http_demo.py")
+        completed = subprocess.run(
+            [sys.executable, str(script)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, completed.returncode)
+        self.assertIn("PASS same_session=true", completed.stdout)
+        self.assertIn("transport=http", completed.stdout)
 
     def test_mock_bridge_rejects_evidence_before_dispatch(self):
         target = ticket()
