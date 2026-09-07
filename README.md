@@ -8,6 +8,25 @@ This repository is a privacy-clean reference architecture and executable control
 
 It is **not** a credential broker, an OAuth workaround, or a production inference proxy. You bring a gateway/adapter that is authorized to call each provider. This project supplies the state model, evidence rules, failure handling, tests, and a path other builders can reproduce.
 
+## See the value in 60 seconds
+
+Run one command from the repository root:
+
+```sh
+python3 reference/http_demo.py
+# Windows Python launcher: py -3 reference/http_demo.py
+```
+
+It starts an ephemeral loopback bridge, sends real JSON/HTTP requests through `probe → switch → evidence`, switches A → B → A, and then shuts the server down. The receipts keep one exact session ID and show the revision-correlated route evidence used for each commit:
+
+```text
+SWITCH revision=1 session=demo-session-001 target=route-b evidence=mock-request-2
+SWITCH revision=2 session=demo-session-001 target=route-a evidence=mock-request-4
+PASS same_session=true route_sequence=route-a>route-b>route-a transcript_messages=6 workspace_preserved=true transport=http exact_session_evidence=true
+```
+
+This is a networked rehearsal, not a commercial-model claim: the included server uses fictional in-memory routes and no credentials. To go live, keep the controller and [`HttpBridge`](reference/http_bridge.py), then replace [`MockBridgeState`](reference/mock_bridge.py) with the three shell/gateway operations in the [live reproduction guide](docs/live-reproduction.md).
+
 ## What makes it the same session?
 
 The agent shell remains alive and continues to own:
@@ -44,6 +63,7 @@ This preserves explicit conversation state. It cannot preserve provider-private 
 See [the implementation guide](docs/implementation-guide.md) for the complete assembly and [the runnable controller](reference/switch_controller.py) for the transaction semantics.
 
 ```sh
+python3 reference/http_demo.py
 python reference/demo.py
 python -m unittest discover -s reference -p "test_*.py"
 python scripts/privacy_check.py
@@ -110,6 +130,8 @@ The example registry is fictional and makes no claim that a named commercial rou
 - [Architecture](docs/architecture.md) — components and data flow
 - [Controller reference](reference/switch_controller.py) — executable state machine
 - [HTTP bridge client](reference/http_bridge.py) — generic live probe/dispatch/evidence contract
+- [Runnable mock bridge](reference/mock_bridge.py) — loopback server for the same HTTP contract
+- [HTTP end-to-end demo](reference/http_demo.py) — networked A → B → A rehearsal with evidence receipts
 - [Atomic state store](reference/state_store.py) — atomic, non-secret desired-route persistence
 - [Runnable demonstration](reference/demo.py) — credential-free A → B → A continuity proof
 - [Reference tests](reference) — races, stale evidence, cancellation, persistence, bridge parsing, rollback, and degraded state

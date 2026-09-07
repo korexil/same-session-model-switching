@@ -6,6 +6,25 @@
 
 它**不是**凭据中转站、OAuth 绕过教程或现成生产代理。你需要自行提供被供应商允许的网关/适配器；本仓库提供状态机、证据规则、失败恢复、可运行参考实现与验收方法。
 
+## 60 秒看懂它的价值
+
+在仓库根目录执行一条命令：
+
+```sh
+python3 reference/http_demo.py
+# Windows Python Launcher：py -3 reference/http_demo.py
+```
+
+它会临时启动一个只监听本机的 bridge，让真实 JSON/HTTP 请求依次穿过 `probe → switch → evidence`，完成 A → B → A，然后自动关闭服务。两张回执始终绑定同一个精确 session ID，并显示每次提交采用的 revision 因果证据：
+
+```text
+SWITCH revision=1 session=demo-session-001 target=route-b evidence=mock-request-2
+SWITCH revision=2 session=demo-session-001 target=route-a evidence=mock-request-4
+PASS same_session=true route_sequence=route-a>route-b>route-a transcript_messages=6 workspace_preserved=true transport=http exact_session_evidence=true
+```
+
+这是带网络边界的排练，不是“商业模型已经实测”的声明：内置服务只使用虚构的内存路由，不读凭据。真实接入时保留控制器和 [`HttpBridge`](reference/http_bridge.py)，再把 [`MockBridgeState`](reference/mock_bridge.py) 换成[真实接入路线](docs/live-reproduction.md)中的三项外壳/网关操作。
+
 ## 为什么仍是“同一场”
 
 不重启 Agent 外壳，因此以下东西不换：
@@ -42,6 +61,7 @@ flowchart LR
 完整装配见[实现指南](docs/implementation-guide.md)，事务语义见[可运行控制器](reference/switch_controller.py)。
 
 ```sh
+python3 reference/http_demo.py
 python reference/demo.py
 python -m unittest discover -s reference -p "test_*.py"
 python scripts/privacy_check.py
@@ -108,6 +128,8 @@ PASS same_session=true route_sequence=route-a>route-b>route-a transcript_message
 - [架构](docs/architecture.md)：组件与数据流
 - [控制器参考实现](reference/switch_controller.py)：可执行状态机
 - [HTTP bridge 客户端](reference/http_bridge.py)：通用真实探活、切换与证据契约
+- [可运行 mock bridge](reference/mock_bridge.py)：实现同一 HTTP 契约的本机服务
+- [HTTP 端到端演示](reference/http_demo.py)：带证据回执的网络版 A → B → A 排练
 - [原子状态存储](reference/state_store.py)：原子替换且不含凭据的 desired 持久化
 - [可运行演示](reference/demo.py)：无凭据 A → B → A 连续性证明
 - [参考测试](reference)：竞态、陈旧证据、取消、持久化、bridge 解析、回滚与降级
